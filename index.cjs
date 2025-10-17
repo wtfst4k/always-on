@@ -1,6 +1,8 @@
 const config = require("./config.json");
 const mineflayer = require("mineflayer");
 
+let dieAlready = false;
+
 function newBot() {
   const bot = mineflayer.createBot({
     username: config.user,
@@ -21,22 +23,26 @@ function newBot() {
       console.log(
         `[\x1b[31m-\x1b[0m] ${bot.username} wasn't logged in properly.`,
       );
-    console.log(
-      `[\x1b[33m!\x1b[0m] ${bot.username} has been kicked! Reason: ${reason.toString()}`,
-    );
+    console.log(`[\x1b[33m!\x1b[0m] ${bot.username} has been kicked!`);
   });
 
   bot.on("error", (error) => {
     console.log(
       `[\x1b[31m-\x1b[0m] ${bot.username} encountered an error: ${error}`,
     );
+    dieAlready = true;
+    if (dieAlready) {
+      process.exit(1);
+    }
   });
 
   bot.once("end", () => {
     console.log(
       `[\x1b[31m-\x1b[0m] ${bot.username} disconnected from server, rejoining in 1second..`,
     );
-    setTimeout(newBot, 1000);
+    if (!dieAlready) {
+      setTimeout(newBot, 1000);
+    }
   });
 
   bot.on("health", () => {
